@@ -3,8 +3,10 @@ const router = require('./routes/route');
 const mongoose = require('mongoose');
 require('dotenv').config();
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const app = express();
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.connect(process.env.MONGO_URI).then(() => console.log('MongoDB connected', process.env.MONGO_URI))
