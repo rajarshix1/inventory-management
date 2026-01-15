@@ -10,9 +10,6 @@ const supplierSchema = new Schema({
         ref: 'Tenant',
         required: true
     },
-    contactInfo: {
-        type: String,
-        required: true
-    }
+
 });
 module.exports = mongoose.model('Supplier', supplierSchema);

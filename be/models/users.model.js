@@ -5,6 +5,15 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
+    email: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
     tenantId: {
         type: Schema.Types.ObjectId,
         ref: 'Tenant',
