@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
+require('../models/tenants.model');
+
 const productSchema = new Schema({
     name: {
         type: String,
@@ -9,10 +11,6 @@ const productSchema = new Schema({
         type: String,
         required: true
     },
-    price: {
-        type: Number,
-        required: true
-    }, ///pre method
     tenantId: {
         type: Schema.Types.ObjectId,
         ref: 'Tenant',

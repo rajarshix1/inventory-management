@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
+require('../models/tenants.model');
+require('../models/products.model');
+
 const productVariantSchema = new Schema({
     sku: {
         type: String,

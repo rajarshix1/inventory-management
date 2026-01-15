@@ -55,7 +55,7 @@ const suppliersData = [
 async function seed() {
     try {
         await mongoose.connect(process.env.MONGO_URI);
-        console.log('Connected to MongoDB');
+        console.log('Connected to MongoDB', process.env.MONGO_URI);
         await User.deleteMany({});
         await Tenant.deleteMany({});
         await Supplier.deleteMany({});

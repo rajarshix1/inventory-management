@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
+require('../models/tenants.model');
+
 const supplierSchema = new Schema({
     name: {
         type: String,
