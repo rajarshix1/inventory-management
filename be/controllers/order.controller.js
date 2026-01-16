@@ -104,5 +104,5 @@ async function updatePurchaseOrderStatus(req, res) {
 module.exports = {
     createSalesOrder,
     createPurchaseOrder,
-    updateOrderStatus
+    updatePurchaseOrderStatus
 };
