@@ -55,8 +55,8 @@ async function createPurchaseOrder(req, res) {
 
         const date = new Date();
         const totalPrice = variant.price * quantity;
-        variant.quantity += quantity;
-        await variant.save({ session });
+        // variant.quantity += quantity;
+        // await variant.save({ session });
         const [order] = await PurchaseOrder.create([{
             tenantId, supplierId, date, productId, variantId, quantity, totalPrice,
             orderStatus: 'Draft'
@@ -72,14 +72,13 @@ async function createPurchaseOrder(req, res) {
     }
 }
 
-async function updateOrderStatus(req, res) {
+async function updatePurchaseOrderStatus(req, res) {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
         const { id } = req.params;
         const { status, type } = req.body;
 
-        if (type === 'purchase') {
             const order = await PurchaseOrder.findById(id).session(session);
 
             if (status === 'Received' && order.orderStatus !== 'Received') {
@@ -89,20 +88,14 @@ async function updateOrderStatus(req, res) {
                     { session }
                 );
             }
-
             order.orderStatus = status;
             await order.save({ session });
-        } else {
-            const order = await SalesOrder.findById(id).session(session);
-            order.orderStatus = status;
-            await order.save({ session });
-        }
 
         await session.commitTransaction();
-        commonResponse(res, true, 'Success', null);
+        commonResponse(res, true, 'Success', "Data updated successfully");
     } catch (err) {
         await session.abortTransaction();
-        commonResponse(res, false, 'Failure', null);
+        commonResponse(res, false, 'Failure', err);
     } finally {
         session.endSession();
     }
