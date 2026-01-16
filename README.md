@@ -33,6 +33,7 @@ Didnt design the frontend that well.
 Haven't tested the api execution times. 
 Could've used redis for caching dashboard data.
 Didn't add real time data in dashboard. will take time so skipping that. 
+Forgot to add partial order fulfillment. Need to add one more status, partial_received. and add quantity from body. Don't have time so skipping now. 
 
 *********************************************************************************************************************************************
 To test socket, connect to the backend url. then join room with join-room and tenantId as argument. listen to notification and refreshDashboard. Then just create any order, po or so. and update order's status. Have two images of response as well.
