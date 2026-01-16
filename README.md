@@ -20,6 +20,7 @@ dashboard api. used aggregation there.
 roll based authorization for some apis. just to show the feature. 
 api for getting all products. 
 login for users.
+Added socket in backend. Notifications and low stock alerts working.
 
 frontend: 
 Login page
@@ -27,11 +28,13 @@ Dashboard page
 Context api
 
 Limitations: 
-Didnt add notification yet. if I can add those by two hours Ill add it along with socket.io in frontend. need alert/notification table for that.
-Didnt add low stock alerts yet. I'll add these as well. 
+Didn't connect with socket in the frontend. 
 Didnt design the frontend that well. 
-Haven't tested the api times. 
+Haven't tested the api execution times. 
 Could've used redis for caching dashboard data.
 Didn't add real time data in dashboard. will take time so skipping that. 
 
-
+*********************************************************************************************************************************************
+To test socket, connect to the backend url. then join room with join-room and tenantId as argument. listen to notification and refreshDashboard. Then just create any order, po or so. and update order's status. Have two images of response as well.
+*********************************************************************************************************************************************
+Included the postman collection as well. 

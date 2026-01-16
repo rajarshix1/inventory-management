@@ -3,12 +3,13 @@ const PurchaseOrder = require('../models/purchaseOrder.model');
 const SalesOrder = require('../models/salesOrder.model');
 const ProductVariant = require('../models/productVariants.model');
 const { commonResponse } = require('../utils/utils');
+const { sendNotification, refreshDashboard } = require('../utils/socket');
 
 async function createSalesOrder(req, res) {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
-        const { tenantId } = req.user;
+        const { tenantId, _id: userId } = req.user;
         const { customerName, customerEmail, productId, variantId, quantity } = req.body;
 
         const variant = await ProductVariant.findOneAndUpdate(
@@ -28,7 +29,11 @@ async function createSalesOrder(req, res) {
             tenantId, customerName, customerEmail, date, productId, variantId, quantity, totalPrice,
             orderStatus: 'Confirmed'
         }], { session });
-
+        await sendNotification(tenantId, userId, `New sales order created for ${quantity} items`);
+        if (variant.quantity <= 5) {
+            await sendNotification(tenantId, userId, `Low stock alert! Only ${variant.quantity} items remaining for variant ${variant.sku}`);
+        }
+        refreshDashboard(tenantId);
         await session.commitTransaction();
         commonResponse(res, true, 'Success', order, 201);
     } catch (err) {
@@ -43,8 +48,7 @@ async function createPurchaseOrder(req, res) {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
-        const { tenantId } = req.user;
-        console.log(req.user)
+        const { tenantId, _id: userId } = req.user;
         const { supplierId, productId, variantId, quantity } = req.body;
 
         const variant = await ProductVariant.findById(variantId);
@@ -55,12 +59,13 @@ async function createPurchaseOrder(req, res) {
 
         const date = new Date();
         const totalPrice = variant.price * quantity;
-        // variant.quantity += quantity;
-        // await variant.save({ session });
+
         const [order] = await PurchaseOrder.create([{
             tenantId, supplierId, date, productId, variantId, quantity, totalPrice,
             orderStatus: 'Draft'
         }], { session });
+        await sendNotification(tenantId, userId, `New purchase order created for ${quantity} items`);
+        refreshDashboard(tenantId);
 
         await session.commitTransaction();
         commonResponse(res, true, 'Success', order, 201);
@@ -96,16 +101,22 @@ async function updatePurchaseOrderStatus(req, res) {
                 throw new Error(`Invalid status transition from ${order.orderStatus} to ${status}`);
             }
 
+        let updatedVariant = null;
             if (status === 'Received' && order.orderStatus !== 'Received') {
-                await ProductVariant.findByIdAndUpdate(
+                const variant = await ProductVariant.findByIdAndUpdate(
                     order.variantId,
                     { $inc: { quantity: order.quantity } },
-                    { session }
+                    { session, new: true }
                 );
+                updatedVariant = variant;
             }
             order.orderStatus = status;
             await order.save({ session });
 
+        if (status === 'Received' && updatedVariant) {
+            await sendNotification(order.tenantId, req.user._id, `Purchase order received. New quantity: ${updatedVariant.quantity}`);
+        }
+        refreshDashboard(order.tenantId);
         await session.commitTransaction();
         commonResponse(res, true, 'Success', "Data updated successfully");
     } catch (err) {
