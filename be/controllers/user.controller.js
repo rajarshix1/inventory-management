@@ -6,21 +6,21 @@ async function createUser(req, res) {
     try {
         const { name, email, password, userType } = req.body;
         if (!name || !email || !password || !userType) {
-            return commonResponse(res, false, 'All fields are required', 400);
+            return commonResponse(res, false, 'All fields are required', null);
         }
         if (password.length < 8) {
-            return commonResponse(res, false, 'Password must be at least 8 characters long', 400);
+            return commonResponse(res, false, 'Password must be at least 8 characters long', null);
         }
         if (!['Manager', 'Staff'].includes(userType)) {
-            return commonResponse(res, false, 'Invalid user type', 400);
+            return commonResponse(res, false, 'Invalid user type', null);
         }
         if (userType === 'Manager' && req.user.userType !== 'Owner') {
-            return commonResponse(res, false, 'Only Owners can create Managers', 403);
+            return commonResponse(res, false, 'Only Owners can create Managers', null, 403);
         }
         
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return commonResponse(res, false, 'Email already exists', 400);
+            return commonResponse(res, false, 'Email already exists', null);
         }
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await User.create({
@@ -30,14 +30,14 @@ async function createUser(req, res) {
             userType,
             tenantId: req.user.tenantId
         });
-        commonResponse(res, true, {
+        commonResponse(res, true, 'Success', {
             id: user._id,
             name: user.name,
             email: user.email,
             userType: user.userType
         }, 201);
     } catch (err) {
-        commonResponse(res, false, err.message);
+        commonResponse(res, false, 'Failure', null);
     }
 }
 
@@ -45,18 +45,18 @@ async function login(req, res) {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            return commonResponse(res, false, 'Email and password are required', 400);
+            return commonResponse(res, false, 'Email and password are required', null);
         }
         const user = await User.findOne({ email }).populate('tenantId');
         if (!user) {
-            return commonResponse(res, false, 'Invalid email');
+            return commonResponse(res, false, 'Invalid email', null);
         }
         const match = await bcrypt.compare(password, user.password);
         if (!match) {
-            return commonResponse(res, false, 'Invalid password');
+            return commonResponse(res, false, 'Invalid password', null);
         }
         const accessToken = generateToken({ userId: user._id, tenantId: user.tenantId });
-        commonResponse(res, true, {
+        commonResponse(res, true, 'Success', {
             accessToken,
             user: {
                 id: user._id,
@@ -67,7 +67,7 @@ async function login(req, res) {
             }
         });
     } catch (err) {
-        commonResponse(res, false, err.message);
+        commonResponse(res, false, 'Failure', null);
     }
 }
 

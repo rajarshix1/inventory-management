@@ -3,9 +3,9 @@ const router = express.Router();
 const userRoutes = require('./user.route');
 const productRoutes = require('./product.route');
 const tenantRoutes = require('./tenant.route');
-
+const orderRoutes = require('./order.route');
 router.use('/users', userRoutes);
 router.use('/products', productRoutes);
 router.use('/tenants', tenantRoutes);
-
+router.use('/orders', orderRoutes);
 module.exports = router;

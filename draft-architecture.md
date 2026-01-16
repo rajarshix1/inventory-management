@@ -14,3 +14,14 @@ Two types of orders is there. PO or Purchase Orders are used when a tenant buys 
 
 
 For indexing tenantId is definately going to be indexed. I'll also index frequently queried fields to ensure good performance. There can be compound indexes for the heavy query operations. For dashboard aggregation has to be used. 
+
+For frontend: Its the first time I'm using react router so taking some suggestions from the internet(not using any AI). Just going to create login, dashboard, context for storing logged in state and users data, and real time socket based dashboard data. 
+
+If had some time I'd add purchase order screen, system for sales order, customer login and system for supplier login as well. For supplier there would be one supplier master table, which would store the creds for supplier while linking the current supplier table. 
+
+
+the concept is when creating purchase order it is saved in the draft first. this is to mimic draft saving from frontend. Then the order is changed to sent via api. same for the other two statuses. 
+
+In actual scenario, I'd have implemented a draft table for the draft feature. 
+
+Used mongodb atlas for using transactions. Without replica set transaction cannot be done. 
