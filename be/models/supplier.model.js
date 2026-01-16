@@ -13,5 +13,5 @@ const supplierSchema = new Schema({
         required: true
     },
 
-});
+}, { timestamps: true });
 module.exports = mongoose.model('Supplier', supplierSchema);

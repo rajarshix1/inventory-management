@@ -7,6 +7,7 @@ const { commonResponse } = require('../utils/utils');
 async function createProduct(req, res) {
     try {
         const { name, description, price, variants } = req.body;
+        console.log(req.user, req.body);
         const product = await Product.create({
             name,
             description,
@@ -27,23 +28,24 @@ async function createProduct(req, res) {
         }
         commonResponse(res, true, 'Success', product, 201);
     } catch (err) {
-        commonResponse(res, false, 'Failure', null);
+        console.log(err);
+        commonResponse(res, false, 'Failure', err.message);
     }
 }
 
 async function getProducts(req, res) {
     try {
-       const products = await Product.aggregate([
-              { $match: { tenantId: req.user.tenantId } },
-              {
-                  $lookup: {
-                      from: 'productvariants', 
-                      localField: '_id',
-                      foreignField: 'productId',
-                      as: 'variants'
-                  }
-              }
-          ]);
+        const products = await Product.aggregate([
+            { $match: { tenantId: req.user.tenantId } },
+            {
+                $lookup: {
+                    from: 'productvariants',
+                    localField: '_id',
+                    foreignField: 'productId',
+                    as: 'variants'
+                }
+            }
+        ]);
         commonResponse(res, true, 'Success', products);
     } catch (err) {
         commonResponse(res, false, 'Failure', null);
@@ -61,8 +63,53 @@ async function getDashboard(req, res) {
             .select('name description');
         const variants = await ProductVariant.find({ tenantId: req.user.tenantId })
             .select('sku quantity price size color');
-        const purchaseOrders = await PurchaseOrder.find({ tenantId: req.user.tenantId })
-            .select('date quantity totalPrice').populate('supplierId', 'name');
+        const purchaseOrders = await PurchaseOrder.aggregate([
+            {
+                $match: {tenantId: req.user.tenantId}
+            },
+            {
+                $lookup: {
+                    from: "suppliers",
+                    localField: "supplierId",
+                    foreignField: "_id",
+                    as: "supplier"
+                }
+            },
+
+            {
+                $unwind: {
+                    path: "$supplier",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+
+            {
+                $addFields: {
+                    supplier: {
+                        _id: "$supplier._id",
+                        name: "$supplier.name"
+                    }
+                }
+            },
+
+            {
+                $group: {
+                    _id: "$orderStatus",
+                    orders: {
+                        $push: "$$ROOT"  
+                    }
+                }
+            },
+
+            {
+                $project: {
+                    _id: 0,
+                    orderStatus: "$_id",
+                    orders: 1
+                }
+            }
+        ]);
+
         const salesOrders = await SalesOrder.find({ tenantId: req.user.tenantId })
             .select('date quantity totalPrice');
         commonResponse(res, true, 'Success', {

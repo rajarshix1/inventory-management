@@ -43,6 +43,6 @@ const salesOrderSchema = new Schema({
         type: String, //Confirmed
         required: true,
     }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('SalesOrder', salesOrderSchema);

@@ -16,6 +16,6 @@ const productSchema = new Schema({
         ref: 'Tenant',
         required: true
     },
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Product', productSchema);

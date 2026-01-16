@@ -42,6 +42,6 @@ const purchaseOrderSchema = new Schema({
         enum: ['Draft', 'Sent', 'Confirmed', 'Received'],
         default: 'Draft'
     }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('PurchaseOrder', purchaseOrderSchema);

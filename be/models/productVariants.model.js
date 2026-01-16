@@ -34,8 +34,8 @@ const productVariantSchema = new Schema({
         type: String,
         required: true
     }
-});
-productVariantSchema.index({ sku: 1, tenantId: 1 }, { unique: true });
+}, { timestamps: true });
+productVariantSchema.index({ productId: 1,sku: 1, tenantId: 1 }, { unique: true });
 productVariantSchema.index({ productId: 1, tenantId: 1 });
 
 module.exports = mongoose.model('ProductVariant', productVariantSchema);

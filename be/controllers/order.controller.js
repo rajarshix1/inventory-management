@@ -77,9 +77,24 @@ async function updatePurchaseOrderStatus(req, res) {
     session.startTransaction();
     try {
         const { id } = req.params;
-        const { status, type } = req.body;
-
+        const { status } = req.body;
+        const orderstatuses = ['Draft', 'Sent', 'Confirmed', 'Received'];
+            if(!status){
+                throw new Error("Status is required");
+            }
+            if (!orderstatuses.includes(status)) {
+                throw new Error("Invalid status");
+            }
             const order = await PurchaseOrder.findById(id).session(session);
+            if (!order) {
+                throw new Error("Order not found");
+            }
+            if(order && order.orderStatus === 'Received'){
+                throw new Error("Order already received");
+            }
+            if(order && orderstatuses.indexOf(status) !== orderstatuses.indexOf(order.orderStatus) + 1){
+                throw new Error(`Invalid status transition from ${order.orderStatus} to ${status}`);
+            }
 
             if (status === 'Received' && order.orderStatus !== 'Received') {
                 await ProductVariant.findByIdAndUpdate(
@@ -95,7 +110,7 @@ async function updatePurchaseOrderStatus(req, res) {
         commonResponse(res, true, 'Success', "Data updated successfully");
     } catch (err) {
         await session.abortTransaction();
-        commonResponse(res, false, 'Failure', err);
+        commonResponse(res, false, 'Failure', err.message);
     } finally {
         session.endSession();
     }
